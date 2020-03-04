@@ -195,15 +195,29 @@ class _MyHomePageState extends State<MyHomePage> {
             child: _buildList(context),
           ),
           Container(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
-            child: Text(
-              'Done',
-              style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'Done',
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() {
+                        doneTodos.clear();
+                        clearTodos();
+                        _showToast("Done todos cleared");
+                      });
+                    },
+                  )
+                ],
+              )),
           Expanded(
             child: _buildDoneList(context),
           ),

@@ -18,6 +18,12 @@ Future<void> insertTodo(Todo todo) async {
       conflictAlgorithm: ConflictAlgorithm.replace);
 }
 
+Future<void> clearTodos() async {
+  final Database db = await database;
+
+  await db.delete('todo', where: "done = 1");
+}
+
 Future<List<Todo>> listTodos() async {
   final Database db = await database;
 
