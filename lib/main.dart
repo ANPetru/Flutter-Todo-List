@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 import './todo.dart';
+import './TodoDialog.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,9 +33,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final scaffoldState = GlobalKey<ScaffoldState>();
+  bool loaded = false;
+  Set<String> todos = new Set<String>();
+  Set<String> doneTodos = new Set<String>();
+  StreamController<Todo> todoStream = StreamController<Todo>();
+
   @override
   void initState() {
     super.initState();
+    todoStream.stream.listen((todo) {
+      _showToast('"' + todo.name + '" has been added as a Todo');
+      setState(() {
+        todos.add(todo.name);
+        insertTodo(todo);
+      });
+    });
     openDB().then((_) {
       listTodos().then((allTodos) {
         allTodos.forEach((todo) {
@@ -47,13 +65,6 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
   }
-
-  TextEditingController _textFieldController = TextEditingController();
-  final scaffoldState = GlobalKey<ScaffoldState>();
-  bool _validate = false;
-  bool loaded = false;
-  Set<String> todos = new Set<String>();
-  Set<String> doneTodos = new Set<String>();
 
   Widget _buildDoneList(BuildContext context) {
     if (!loaded) {
@@ -134,33 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            title: Text('New Todo'),
-            content: TextField(
-              controller: _textFieldController,
-              decoration: InputDecoration(
-                  hintText: "Todo...",
-                  errorText: _validate ? 'Please enter a todo' : null),
-            ),
-            actions: <Widget>[
-              new FlatButton(
-                  onPressed: () {
-                    _validate = true;
-                    if (_textFieldController.text.isNotEmpty) {
-                      String todo = _textFieldController.text;
-                      _validate = false;
-                      _showToast('"' + todo + '" has been added as a Todo');
-                      setState(() {
-                        todos.add(todo);
-                        insertTodo(Todo(todo, 0));
-                      });
-                      _textFieldController.text = "";
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Text('Add'))
-            ],
-          );
+          return TodoDialog(todoStream);
         });
   }
 
