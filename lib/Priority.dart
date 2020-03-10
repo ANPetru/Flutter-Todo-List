@@ -5,6 +5,12 @@ class Priority {
   static const MEDIUM = "Medium";
   static const HIGH = "High";
 
+  static const PRIORITY_VALUE = {
+    LOW: 3,
+    MEDIUM: 2,
+    HIGH: 1
+  };
+
   static MaterialColor getColor(String priority) {
     switch (priority) {
       case LOW:

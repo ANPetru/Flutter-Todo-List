@@ -102,12 +102,20 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[Text("No todos remaining!")]);
     }
 
+    List<Todo> sortedTodos = todos.toList();
+    sortedTodos.sort((a, b) {
+      int p = Priority.PRIORITY_VALUE[a.priority]
+          .compareTo(Priority.PRIORITY_VALUE[b.priority]);
+      if (p != 0) return p;
+      return a.name.compareTo(b.name);
+    });
+
     return ListView.builder(
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
-        itemCount: todos.length,
+        itemCount: sortedTodos.length,
         itemBuilder: (context, index) {
-          final todo = todos.elementAt(index);
+          final todo = sortedTodos.elementAt(index);
           return Card(
               child: Slidable(
             key: ValueKey(index),
