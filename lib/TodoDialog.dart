@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import './Priority.dart';
 import './todo.dart';
 
 class TodoDialog extends StatefulWidget {
@@ -16,7 +16,7 @@ class TodoDialog extends StatefulWidget {
 
 class _TodoDialogState extends State<TodoDialog> {
   TextEditingController _textFieldController = TextEditingController();
-  String currentSelectedValue = Priority.medium.toShortString();
+  String selectedPriority = Priority.MEDIUM;
   bool _validate = false;
   StreamController<Todo> todoStream;
 
@@ -39,19 +39,18 @@ class _TodoDialogState extends State<TodoDialog> {
           ),
           SizedBox(height: 20),
           DropdownButtonFormField<String>(
-            value: currentSelectedValue,
+            value: selectedPriority,
             decoration: InputDecoration(labelText: 'Priority'),
-            items: <Priority>[Priority.low, Priority.medium, Priority.high]
-                .map((Priority priority) {
-              String p = priority.toShortString();
+            items: <String>[Priority.LOW, Priority.MEDIUM, Priority.HIGH]
+                .map((String priority) {
               return DropdownMenuItem<String>(
-                value: p,
-                child: Text(p),
+                value: priority,
+                child: Text(priority),
               );
             }).toList(),
             onChanged: (String priority) {
               setState(() {
-                currentSelectedValue = priority;
+                selectedPriority = priority;
               });
             },
           )
@@ -62,7 +61,8 @@ class _TodoDialogState extends State<TodoDialog> {
             onPressed: () {
               _validate = true;
               if (_textFieldController.text.isNotEmpty) {
-                Todo todo = Todo(_textFieldController.text, 0);
+                Todo todo =
+                    Todo(_textFieldController.text, 0, selectedPriority);
                 _validate = false;
                 _textFieldController.text = "";
                 Navigator.of(context).pop();
@@ -72,14 +72,5 @@ class _TodoDialogState extends State<TodoDialog> {
             child: Text('Add'))
       ],
     );
-  }
-}
-
-enum Priority { low, medium, high }
-
-extension on Priority {
-  String toShortString() {
-    var a = this.toString().split('.').last;
-    return a;
   }
 }

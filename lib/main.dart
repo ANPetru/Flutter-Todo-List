@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:provider/provider.dart';
+import './Priority.dart';
 import './todo.dart';
 import './TodoDialog.dart';
 
@@ -35,17 +35,21 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final scaffoldState = GlobalKey<ScaffoldState>();
   bool loaded = false;
-  Set<String> todos = new Set<String>();
-  Set<String> doneTodos = new Set<String>();
+  Set<Todo> todos = new Set<Todo>();
+  Set<Todo> doneTodos = new Set<Todo>();
   StreamController<Todo> todoStream = StreamController<Todo>();
 
   @override
   void initState() {
     super.initState();
     todoStream.stream.listen((todo) {
-      _showToast('"' + todo.name + '" has been added as a Todo');
+      _showToast('"' +
+          todo.name +
+          '" has been added as a Todo with ' +
+          todo.priority +
+          ' priority');
       setState(() {
-        todos.add(todo.name);
+        todos.add(todo);
         insertTodo(todo);
       });
     });
@@ -53,9 +57,9 @@ class _MyHomePageState extends State<MyHomePage> {
       listTodos().then((allTodos) {
         allTodos.forEach((todo) {
           if (todo.done == 1) {
-            doneTodos.add(todo.name);
+            doneTodos.add(todo);
           } else {
-            todos.add(todo.name);
+            todos.add(todo);
           }
         });
 
@@ -82,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
         shrinkWrap: true,
         itemCount: doneTodos.length,
         itemBuilder: (context, index) {
-          return ListTile(title: Text(doneTodos.elementAt(index)));
+          return ListTile(title: Text(doneTodos.elementAt(index).name));
         });
   }
 
@@ -97,11 +101,13 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[Text("No todos remaining!")]);
     }
+
     return ListView.builder(
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
         itemCount: todos.length,
         itemBuilder: (context, index) {
+          final todo = todos.elementAt(index);
           return Card(
               child: Slidable(
             key: ValueKey(index),
@@ -113,7 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 icon: Icons.remove_circle,
                 onTap: () {
                   setState(() {
-                    todos.remove(todos.elementAt(index));
+                    removeTodo(todo);
+                    todos.remove(todo);
                   });
                 },
               )
@@ -124,18 +131,26 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.green,
                 icon: Icons.done,
                 onTap: () {
-                  String element = todos.elementAt(index);
-                  _showToast('Congratulation on finishing "' + element + '" !');
+                  _showToast(
+                      'Congratulation on finishing "' + todo.name + '" !');
                   setState(() {
-                    doneTodos.add(element);
-                    insertTodo(Todo(element, 1));
-                    todos.remove(element);
+                    doneTodos.add(todo);
+                    insertTodo(Todo(todo.name, 1, todo.priority));
+                    todos.remove(todo);
                   });
                 },
               )
             ],
             child: ListTile(
-              title: Text(todos.elementAt(index)),
+              title: Text(todo.name),
+              trailing: Tooltip(
+                message: todo.priority,
+                waitDuration: Duration(milliseconds: 1),
+                child: Icon(
+                  Icons.lens,
+                  color: Priority.getColor(todo.priority),
+                ),
+              ),
             ),
           ));
         });
