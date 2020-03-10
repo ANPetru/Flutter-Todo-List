@@ -34,6 +34,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final scaffoldState = GlobalKey<ScaffoldState>();
+  int _currentTab = 0;
   bool loaded = false;
   Set<Todo> todos = new Set<Todo>();
   Set<Todo> doneTodos = new Set<Todo>();
@@ -172,6 +173,14 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
+  void _clearTodos() {
+    setState(() {
+      doneTodos.clear();
+      clearTodos();
+      _showToast("Done todos cleared");
+    });
+  }
+
   void _showToast(message) {
     scaffoldState.currentState.showSnackBar(SnackBar(
       content: Text(message),
@@ -182,60 +191,43 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldState,
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-          child: Column(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
-            child: Text(
-              'Todo',
-              style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold),
+        key: scaffoldState,
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: <Widget>[
+          _buildList(context),
+          _buildDoneList(context),
+        ][_currentTab],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentTab,
+          onTap: onTabTapped,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.more_horiz),
+              title: Text('Todo'),
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.done),
+              title: Text('Done'),
+            ),
+          ],
+        ),
+        floatingActionButton: <FloatingActionButton>[
+          FloatingActionButton(
+            onPressed: _addTodo,
+            child: Icon(Icons.add),
           ),
-          Expanded(
-            child: _buildList(context),
-          ),
-          Container(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'Done',
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () {
-                      setState(() {
-                        doneTodos.clear();
-                        clearTodos();
-                        _showToast("Done todos cleared");
-                      });
-                    },
-                  )
-                ],
-              )),
-          Expanded(
-            child: _buildDoneList(context),
-          ),
-        ],
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTodo,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ),
-    );
+          FloatingActionButton(
+            child: Icon(Icons.delete),
+            onPressed: _clearTodos,
+          )
+        ][_currentTab]);
+  }
+
+  void onTabTapped(int index) {
+    setState(() {
+      _currentTab = index;
+    });
   }
 }
